@@ -1,0 +1,9 @@
+Script started on Thu Apr  9 15:07:15 2026
+]0;ngysling@r1n06.darwin:~/cisc372/cisc372-assn-2[ngysling@r1n06 cisc372-assn-2]$ srun ./image-threads pic4.jpg edge
+Took 6 seconds
+]0;ngysling@r1n06.darwin:~/cisc372/cisc372-assn-2[ngysling@r1n06 cisc372-assn-2]$ srun ./image-omp pic4.jpg edge
+Took 6 seconds
+]0;ngysling@r1n06.darwin:~/cisc372/cisc372-assn-2[ngysling@r1n06 cisc372-assn-2]$ exit
+exit
+
+Script done on Thu Apr  9 15:07:56 2026
