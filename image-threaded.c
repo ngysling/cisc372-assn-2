@@ -49,8 +49,6 @@ uint8_t getPixelValue(Image* srcImage,int x,int y,int bit,Matrix algorithm){
         algorithm[2][0]*srcImage->data[Index(mx,py,srcImage->width,bit,srcImage->bpp)]+
         algorithm[2][1]*srcImage->data[Index(x,py,srcImage->width,bit,srcImage->bpp)]+
         algorithm[2][2]*srcImage->data[Index(px,py,srcImage->width,bit,srcImage->bpp)];
-	//printf("before: %d\n", srcImage->data[Index(x,y,srcImage->width,bit,srcImage->bpp)]); 
-	//printf("after: %d\n", result); 
     return result;
 }
 
@@ -84,8 +82,8 @@ void* work(void* param) {
 	int firstRow = myRank*localChunk; 
 	int lastRow = (myRank+1)*localChunk - 1; 
 	int row, x, bit;  
-	printf("--------\nrank: %ld\nfirstRow: %d\nlastRow: %d\nalgorithm: %d\nwidth: %d\nbpp: %d\n--------\n", myRank, firstRow, lastRow, kerIndex, arg->src->width, arg->src->bpp); 
-	for(row = firstRow; row < lastRow; row++){
+//	printf("--------\nrank: %ld\nfirstRow: %d\nlastRow: %d\nalgorithm: %d\nwidth: %d\nbpp: %d\n--------\n", myRank, firstRow, lastRow, kerIndex, arg->src->width, arg->src->bpp); 
+	for(row = firstRow; row <= lastRow; row++){
 		for(x=0;x<arg->src->width;x++) { 
 			for(bit=0;bit<arg->src->bpp;bit++) { 
 				arg->dest->data[Index(x,row,arg->src->width,bit,arg->src->bpp)]=getPixelValue(arg->src,x,row,bit,algorithms[kerIndex]); 

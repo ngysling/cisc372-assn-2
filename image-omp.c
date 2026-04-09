@@ -64,7 +64,7 @@ void ompConvolute(Image* srcImage,Image* destImage,Matrix algorithm){
 	localChunk = srcImage->height / threadCount; 
 	firstRow = myRank*localChunk; 
 	lastRow = (myRank+1)*localChunk - 1; 
-    for (row=firstRow;row<lastRow;row++){
+    for (row=firstRow;row<=lastRow;row++){
         for (pix=0;pix<srcImage->width;pix++){
             for (bit=0;bit<srcImage->bpp;bit++){
                 destImage->data[Index(pix,row,srcImage->width,bit,srcImage->bpp)]=getPixelValue(srcImage,pix,row,bit,algorithm);
