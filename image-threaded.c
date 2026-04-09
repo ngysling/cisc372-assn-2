@@ -49,25 +49,11 @@ uint8_t getPixelValue(Image* srcImage,int x,int y,int bit,Matrix algorithm){
         algorithm[2][0]*srcImage->data[Index(mx,py,srcImage->width,bit,srcImage->bpp)]+
         algorithm[2][1]*srcImage->data[Index(x,py,srcImage->width,bit,srcImage->bpp)]+
         algorithm[2][2]*srcImage->data[Index(px,py,srcImage->width,bit,srcImage->bpp)];
+	//printf("before: %d\n", srcImage->data[Index(x,y,srcImage->width,bit,srcImage->bpp)]); 
+	//printf("after: %d\n", result); 
     return result;
 }
 
-//convolute:  Applies a kernel matrix to an image
-//Parameters: srcImage: The image being convoluted
-//            destImage: A pointer to a  pre-allocated (including space for the pixel array) structure to receive the convoluted image.  It should be the same size as srcImage
-//            algorithm: The kernel matrix to use for the convolution
-//Returns: Nothing
-void convolute(Image* srcImage,Image* destImage,Matrix algorithm, int firstRow, int lastRow){
-    int row,pix,bit,span;
-    span=srcImage->bpp*srcImage->bpp;
-    for (row=firstRow;row<lastRow;row++){
-        for (pix=0;pix<srcImage->width;pix++){
-            for (bit=0;bit<srcImage->bpp;bit++){
-                destImage->data[Index(pix,row,srcImage->width,bit,srcImage->bpp)]=getPixelValue(srcImage,pix,row,bit,algorithm);
-            }
-        }
-    }
-}
 
 //Usage: Prints usage information for the program
 //Returns: -1
@@ -94,14 +80,15 @@ void* work(void* param) {
 	threadArg* arg = (threadArg*)param; 
 	long myRank = arg->rank;
 	int kerIndex = arg->kIndex; 
-	int localChunk = arg->src->height / myRank; 
+	int localChunk = arg->src->height / threadCount; 
 	int firstRow = myRank*localChunk; 
 	int lastRow = (myRank+1)*localChunk - 1; 
-	int row, pix, bit;  
+	int row, x, bit;  
+	printf("--------\nrank: %ld\nfirstRow: %d\nlastRow: %d\nalgorithm: %d\nwidth: %d\nbpp: %d\n--------\n", myRank, firstRow, lastRow, kerIndex, arg->src->width, arg->src->bpp); 
 	for(row = firstRow; row < lastRow; row++){
-		for(pix=0;pix<arg->src->width;pix++) { 
+		for(x=0;x<arg->src->width;x++) { 
 			for(bit=0;bit<arg->src->bpp;bit++) { 
-				arg->dest->data[Index(pix,row,arg->src->width,bit,arg->src->bpp)]=getPixelValue(arg->src,pix,row,bit,algorithms[kerIndex]); 
+				arg->dest->data[Index(x,row,arg->src->width,bit,arg->src->bpp)]=getPixelValue(arg->src,x,row,bit,algorithms[kerIndex]); 
 			}
 		}
 	} 
@@ -134,14 +121,21 @@ int main(int argc,char** argv){
 	pthread_t* threadHandles;
 	threadCount=4; 
 	threadHandles=(pthread_t*)malloc(threadCount*sizeof(pthread_t)); 
+	threadArg* jobs[threadCount];
 	for(thread=0;thread<threadCount;thread++) { 
-		threadArg *args = malloc(sizeof(threadArg)); 
-		args->kIndex = (int)ktype; 
-		args->src = &srcImage, 
-		args->dest = &destImage,
-		args->rank = thread; 
-		pthread_create(&threadHandles[thread], NULL, &work, (void*)args); 
+		jobs[thread] = malloc(sizeof(threadArg)); 
+		jobs[thread]->kIndex = (int)ktype; 
+		jobs[thread]->src = &srcImage, 
+		jobs[thread]->dest = &destImage,
+		jobs[thread]->rank = thread; 
+		pthread_create(&threadHandles[thread], NULL, &work, (void*)jobs[thread]); 
 	}
+	int t; 
+	for (t = 0; t < threadCount; t++){
+        pthread_join(threadHandles[t], NULL);
+		free(jobs[t]); 
+    }
+	free(threadHandles); 
     stbi_write_png("output.png",destImage.width,destImage.height,destImage.bpp,destImage.data,destImage.bpp*destImage.width);
     stbi_image_free(srcImage.data);
     free(destImage.data);
