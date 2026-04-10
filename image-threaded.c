@@ -5,6 +5,9 @@
 #include "image.h"
 #include <pthread.h>
 
+
+#define THREAD_COUNT 8
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -72,7 +75,7 @@ enum KernelTypes GetKernelType(char* type){
     else return IDENTITY;
 }
 
-int threadCount; 
+int threadCount = THREAD_COUNT; 
 
 void* work(void* param) { 
 	threadArg* arg = (threadArg*)param; 
